@@ -24,6 +24,7 @@ export function createApp({
   username,
   passwordHash,
   jwtSecret,
+  allowedOrigins = [],
 }) {
   if (!attendance || !username || !passwordHash || !jwtSecret) {
     throw new Error('Attendance storage and authentication settings are required.');
@@ -34,6 +35,29 @@ export function createApp({
   app.set('trust proxy', 1);
   app.use(helmet());
   app.use(express.json({ limit: '16kb' }));
+  app.use((request, response, next) => {
+    const origin = request.get('origin');
+    if (origin) {
+      if (!isAllowedOrigin(origin, allowedOrigins)) {
+        response.status(403).json({ error: 'This browser origin is not allowed.' });
+        return;
+      }
+
+      response.set('Access-Control-Allow-Origin', origin);
+      response.vary('Origin');
+      response.set(
+        'Access-Control-Allow-Headers',
+        'Authorization, Content-Type',
+      );
+      response.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    }
+
+    if (request.method === 'OPTIONS') {
+      response.status(204).end();
+      return;
+    }
+    next();
+  });
 
   app.get('/health', (_request, response) => {
     response.json({ status: 'ok' });
@@ -222,6 +246,20 @@ function publicRecord(record) {
   };
 }
 
+function isAllowedOrigin(origin, allowedOrigins) {
+  if (allowedOrigins.includes(origin)) return true;
+
+  try {
+    const url = new URL(origin);
+    return (
+      url.protocol === 'http:' &&
+      ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)
+    );
+  } catch {
+    return false;
+  }
+}
+
 async function startServer() {
   const required = [
     'MONGODB_URI',
@@ -252,6 +290,10 @@ async function startServer() {
     username: process.env.SYNC_USERNAME,
     passwordHash: process.env.SYNC_PASSWORD_HASH,
     jwtSecret: process.env.JWT_SECRET,
+    allowedOrigins: (process.env.SYNC_CORS_ORIGINS ?? '')
+      .split(',')
+      .map((origin) => origin.trim())
+      .filter(Boolean),
   });
   const port = Number(process.env.PORT ?? 3000);
   const server = app.listen(port, '0.0.0.0', () => {

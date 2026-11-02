@@ -92,6 +92,35 @@ test('requires authentication for attendance records', async () => {
   assert.equal(historyResponse.status, 401);
 });
 
+test('allows local Flutter web preflight and rejects other browser origins', async () => {
+  const preflight = await fetch(`${baseUrl}/api/auth/login`, {
+    method: 'OPTIONS',
+    headers: {
+      origin: 'http://127.0.0.1:5174',
+      'access-control-request-method': 'POST',
+      'access-control-request-headers': 'content-type',
+    },
+  });
+  assert.equal(preflight.status, 204);
+  assert.equal(
+    preflight.headers.get('access-control-allow-origin'),
+    'http://127.0.0.1:5174',
+  );
+  assert.match(
+    preflight.headers.get('access-control-allow-headers'),
+    /Content-Type/i,
+  );
+
+  const rejectedOrigin = await fetch(`${baseUrl}/api/auth/login`, {
+    method: 'OPTIONS',
+    headers: {
+      origin: 'https://untrusted.example',
+      'access-control-request-method': 'POST',
+    },
+  });
+  assert.equal(rejectedOrigin.status, 403);
+});
+
 test('authenticates with the configured password', async () => {
   const response = await fetch(`${baseUrl}/api/auth/login`, {
     method: 'POST',

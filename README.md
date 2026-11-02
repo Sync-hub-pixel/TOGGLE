@@ -28,7 +28,9 @@ The API is in `backend/` and requires Node.js 20 or later.
    `MONGODB_DATABASE` is configured as `sync`, and Render generates the
    `JWT_SECRET`. Generate a bcrypt hash locally with `npm run hash-password`
    from `backend/`, then set it as `SYNC_PASSWORD_HASH`. Do not commit any of
-   these secret values or put them in Flutter.
+   these secret values or put them in Flutter. Optionally set
+   `SYNC_CORS_ORIGINS` to a comma-separated list of HTTPS browser origins; local
+   localhost origins are already allowed for Flutter web development.
 4. Configure a static outbound IP for the service if available, then allow that
    IP in Atlas **Network Access**. Do not allow every IP (`0.0.0.0/0`) for a
    deployed database. The Atlas database user should have only `readWrite`
@@ -65,6 +67,11 @@ password before loading attendance history, and the first punch also asks for
 the password if no valid session is stored. The app securely stores its
 short-lived session token. Each punch is saved to MongoDB, and today's record
 is loaded again when the app opens.
+
+On Windows, Android Gradle build output is stored under
+`%LOCALAPPDATA%\SYNC\build\demo_app` so OneDrive does not lock generated
+intermediate files. If changing this setting while an Android build is already
+running, stop that build and run `flutter clean` once before rebuilding.
 
 ## Check the API
 
