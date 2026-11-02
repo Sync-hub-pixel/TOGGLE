@@ -1,4 +1,4 @@
-# SYNC
+# SYNC (TOGGLE)
 
 SYNC is a single-user daily attendance app. Time In and Time Out are submitted
 to a private Node.js API, which stores the timestamps in MongoDB Atlas. The
@@ -15,11 +15,9 @@ in Flutter, commit it, or send it in chat.
 
 The API is in `backend/` and requires Node.js 20 or later.
 
-1. Push the contents of `demo_app/` to the root of the GitHub repository. The
-   repository should contain `render.yaml`, `backend/`, and the Flutter files.
-   The provided repository URL is currently empty, so this upload is required
-   before Render can deploy it. Keep the repository private if you don't want
-   the source code to be public.
+1. The repository root should contain `render.yaml`, `backend/`, and the Flutter
+   files. The source is in the public GitHub repository, so its code is visible
+   to anyone; do not put credentials or other secrets in it.
 2. In Render, choose **New** > **Blueprint**, connect
    `https://github.com/Sync-hub-pixel/TOGGLE`, and deploy the Blueprint from
    `render.yaml`. It creates a free Node web service using `backend/`,
